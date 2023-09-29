@@ -32,25 +32,18 @@ yarn
 それでは、アプリケーションのさまざまな環境が問題なく動くことを次のコマンドで確認しましょう:
 
 ```shell:clipboard=false
-# Run the test runner (Jest) in a terminal:
-yarn test --watchAll
-
 # Start the component explorer on port 6006:
 yarn storybook
 
-# Run the frontend app proper on port 3000:
-yarn start
+# Run the frontend app proper on port 5173:
+yarn dev
 ```
 
-<div class="aside">
-テストのコマンドに <code>--watchAll</code> フラグを付けているのに気づいたでしょうか。これは間違いではありません。このフラグを付けることにより、すべてのテストが実行され、アプリケーションに問題ないことを確実にできます。チュートリアルを進めると、別のテストシナリオも出てきます。必要ならばこのフラグを <code>package.json</code> のテストコマンドに追加することで、テストスイートのすべてのテストが実行されるようになります。
-</div>
+私たちの主なフロントエンドアプリの様式： コンポーネント開発（Storybook）とアプリケーション自体
 
-フロントエンド開発の 3 つのモード: 自動化されたテスト (Jest)、コンポーネント開発 (Storybook)、アプリケーション自体
+![主な様式](/intro-to-storybook/app-main-modalities-react.png)
 
-![3 つのモード](/intro-to-storybook/app-three-modalities.png)
-
-作業をする対象に応じて、このモードのうち 1 つまたは複数を同時に動かしながら作業します。今は単一の UI コンポーネントを作るのに集中するため、Storybook を動かすことにしましょう。
+作業をする対象に応じて、これら両方を同時に実行したい場合もあります。現在フォーカスしているのは単一の UI コンポーネントを作成することなので、Storybook を実行することにこだわることにしましょう。
 
 ## 変更をコミットする
 
