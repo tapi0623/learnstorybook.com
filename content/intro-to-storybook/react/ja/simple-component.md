@@ -20,17 +20,19 @@ commit: '4355037'
 
 ## セットアップする
 
-まずは、タスクのコンポーネントと、対応するストーリーファイル `src/components/Task.js` と `src/components/Task.stories.js` を作成しましょう。
+まずは、タスクのコンポーネントと、対応するストーリーファイル `src/components/Task.jsx` と `src/components/Task.stories.jsx` を作成しましょう。
 
 `Task` の基本的な実装から始めます。`Task` は上述したプロパティと、タスクに対して実行できる 2 つの (リスト間を移動させる) アクションを引数として取ります:
 
-```js:title=src/components/Task.js
+```js:title=src/components/Task.jsx
 import React from 'react';
 
 export default function Task({ task: { id, title, state }, onArchiveTask, onPinTask }) {
   return (
     <div className="list-item">
-      <input type="text" value={title} readOnly={true} />
+      <label htmlFor="title" aria-label={title}>
+        <input type="text" value={title} readOnly={true} name="title" />
+      </label>
     </div>
   );
 }
@@ -40,41 +42,40 @@ export default function Task({ task: { id, title, state }, onArchiveTask, onPinT
 
 下のコードは `Task` に対する 3 つのテスト用の状態をストーリーファイルに書いています:
 
-```js:title=src/components/Task.stories.js
-import React from 'react';
-
+```js:title=src/components/Task.stories.jsx
 import Task from './Task';
 
 export default {
   component: Task,
   title: 'Task',
+  tags: ['autodocs'],
 };
 
-const Template = args => <Task {...args} />;
-
-export const Default = Template.bind({});
-Default.args = {
-  task: {
-    id: '1',
-    title: 'Test Task',
-    state: 'TASK_INBOX',
-    updatedAt: new Date(2021, 0, 1, 9, 0),
+export const Default = {
+  args: {
+    task: {
+      id: '1',
+      title: 'Test Task',
+      state: 'TASK_INBOX',
+    },
   },
 };
 
-export const Pinned = Template.bind({});
-Pinned.args = {
-  task: {
-    ...Default.args.task,
-    state: 'TASK_PINNED',
+export const Pinned = {
+  args: {
+    task: {
+      ...Default.args.task,
+      state: 'TASK_PINNED',
+    },
   },
 };
 
-export const Archived = Template.bind({});
-Archived.args = {
-  task: {
-    ...Default.args.task,
-    state: 'TASK_ARCHIVED',
+export const Archived = {
+  args: {
+    task: {
+      ...Default.args.task,
+      state: 'TASK_ARCHIVED',
+    },
   },
 };
 ```
@@ -86,55 +87,46 @@ Storybook には基本となる 2 つの階層があります。コンポーネ�
   - ストーリー
   - ストーリー
 
-Storybook にコンポーネントを認識させるには、以下の内容を含む `default export` を記述します:
+Storybook にコンポーネントを認識させるには、以下の内容を含む `default` export を記述します:
 
 - `component` -- コンポーネント自体
-- `title` -- Storybook のサイドバーにあるコンポーネントを参照する方法
+- `title` -- Storybook のサイドバーでコンポーネントをグループ化したり、分類する方法
+- `tags` -- コンポーネントのドキュメントを自動生成するためのタグ
 
-ストーリーを定義するには、テスト用の状態ごとにストーリーを生成する関数をエクスポートします。ストーリーとは、特定の状態で描画された要素 (例えば、プロパティを指定したコンポーネントなど) を返す関数で、React の[状態を持たない関数コンポーネント](https://reactjs.org/docs/components-and-props.html#function-and-class-components)のようなものです。
+ストーリーを定義するには、Component Story Format 3（別名 [CSF3](https://storybook.js.org/docs/react/api/csf) ）を使用して各テストケースを作成します。
 
-コンポーネントにストーリーが複数連なっているので、各ストーリーを単一の `Template` 変数に割り当てるのが便利です。このパターンを導入することで、書くべきコードの量が減り、保守性も上がります。
-
-<div class="aside">
-💡 <code>Template.bind({})</code> は関数のコピーを作成する <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/bind">JavaScript の標準的な</a> テクニックで、同じ実装を使いながら、エクスポートされたそれぞれのストーリーに独自のプロパティを設定することができます。
-</div>
+CSF3 は、各テストケースを簡潔に構築するために設計されています。各コンポーネントの状態を含むオブジェクトをエクスポートすることで、テストをより直観的に定義し、ストーリーをより効率的に作成・再利用できます。
 
 Arguments (略して [`args`](https://storybook.js.org/docs/react/writing-stories/args)) を使用することで、コントロールアドオンを通して、Storybook を再起動することなく、コンポーネントを動的に編集することができるようになります。[`args`](https://storybook.js.org/docs/react/writing-stories/args) の値が変わるとコンポーネントもそれに合わせて変わります。
 
 ストーリーを作る際には素となるタスク引数を使用してコンポーネントが想定するタスクの状態を作成します。想定されるデータは実際のデータと同じように作ります。さらに、このデータをエクスポートすることで、今後作成するストーリーで再利用することが可能となります。
 
-<div class="aside">
-💡 <a href="https://storybook.js.org/docs/react/essentials/actions"><b>アクションアドオン</b></a>は切り離された環境で UI コンポーネントを開発する際の動作確認に役立ちます。アプリケーションの実行中には状態や関数を参照出来ないことがよくあります。<code>action()</code> はそのスタブとして使用できます。
-</div>
-
 ## 設定する
 
-作成したストーリーを認識させ、[前の章](/intro-to-storybook/react/ja/get-started)で変更した CSS ファイルを使用できるようにするため、Storybook の設定をいくつか変更する必要があります。
+作成したストーリーを認識させ、[前の章](/intro-to-storybook/react/ja/get-started)で変更した CSS ファイル(`src/index.css`)を使用できるようにするため、Storybook の設定をいくつか変更する必要があります。
 
 まず、設定ファイル (`.storybook/main.js`) を以下のように変更してください:
 
 ```diff:title=.storybook/main.js
-module.exports = {
-- stories: [
--   '../src/**/*.stories.mdx',
--   '../src/**/*.stories.@(js|jsx|ts|tsx)'
-- ],
-+ stories: ['../src/components/**/*.stories.js'],
+/** @type { import('@storybook/react-vite').StorybookConfig } */
+const config = {
+- stories: ['../src/**/*.mdx', '../src/**/*.stories.@(js|jsx|ts|tsx)'],
++ stories: ['../src/components/**/*.stories.@(js|jsx)'],
   staticDirs: ['../public'],
   addons: [
     '@storybook/addon-links',
     '@storybook/addon-essentials',
-    '@storybook/preset-create-react-app',
     '@storybook/addon-interactions',
   ],
-  features: {
-    postcss: false,
+  framework: {
+    name: '@storybook/react-vite',
+    options: {},
   },
-  framework: '@storybook/react',
-  core: {
-    builder: 'webpack4',
+  docs: {
+    autodocs: 'tag',
   },
 };
+export default config;
 ```
 
 上記の変更が完了したら、`.storybook` フォルダー内の `preview.js` を、以下のように変更してください:
@@ -143,18 +135,23 @@ module.exports = {
 + import '../src/index.css';
 
 //👇 Configures Storybook to log the actions( onArchiveTask and onPinTask ) in the UI.
-export const parameters = {
-  actions: { argTypesRegex: '^on[A-Z].*' },
-  controls: {
-    matchers: {
-      color: /(background|color)$/i,
-      date: /Date$/,
+/** @type { import('@storybook/react').Preview } */
+const preview = {
+  parameters: {
+    actions: { argTypesRegex: "^on[A-Z].*" },
+    controls: {
+      matchers: {
+        color: /(background|color)$/i,
+        date: /Date$/,
+      },
     },
   },
 };
+
+export default preview;
 ```
 
-[`parameters`](https://storybook.js.org/docs/react/writing-stories/parameters) は Storybook の機能やアドオンの振る舞いをコントロールするのに使用します。この例では、アクション (呼び出しのモック) がどのように扱われるかを設定しています。
+[`parameters`](https://storybook.js.org/docs/react/writing-stories/parameters) は Storybook の機能やアドオンの振る舞いをコントロールするのに使用します。この例では、アクション (呼び出しのモック) がどのように処理されるかを設定しています。
 
 アクションアドオンを使用することで、クリックした時などに Storybook の **actions** パネルにその情報を表示するコールバックを作成できます。これにより、ピン留めボタンを作成するとき、ボタンがクリックされたことがテスト用の UI 上で確認できます。
 
@@ -162,7 +159,7 @@ Storybook のサーバーを再起動すると、タスクの 3 つの状態の�
 
 <video autoPlay muted playsInline loop>
   <source
-    src="/intro-to-storybook/inprogress-task-states-6-0.mp4"
+    src="/intro-to-storybook/inprogress-tasklist-states-7-0.mp4"
     type="video/mp4"
   />
 </video>
